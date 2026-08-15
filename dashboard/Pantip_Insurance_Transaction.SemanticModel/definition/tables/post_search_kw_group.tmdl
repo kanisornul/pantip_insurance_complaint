@@ -1,0 +1,79 @@
+table post_search_kw_group
+	lineageTag: b4893b05-af21-40f8-988a-09d50c37653e
+
+	measure 'CountID by Topics' = SUM(post_search_kw_group[count_post])
+		formatString: #,0
+		lineageTag: d5a7cc07-869c-4b41-9676-96b813c97b7a
+
+	measure '% CountID by Topics' = ```
+			
+			VAR CurrentTopicCount = SUM(post_search_kw_group[count_post])
+			VAR TotalForThatYear = 
+			    CALCULATE(
+			        SUM(post_search_kw_group[count_post]), 
+			        ALLEXCEPT(post_search_kw_group, post_details[PostCreateYear])
+			    )
+			
+			RETURN 
+			    DIVIDE(CurrentTopicCount, TotalForThatYear, 0)
+			```
+		lineageTag: 9920d7f7-8dca-4b8f-818a-cbdcf673ab13
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column id
+		dataType: string
+		lineageTag: ab7f1d1b-4aa8-426e-9d6d-ae7cb83a95c2
+		summarizeBy: none
+		sourceColumn: id
+
+		annotation SummarizationSetBy = Automatic
+
+	column search_keyword_groups
+		dataType: string
+		lineageTag: 235c60d9-c31d-4f7b-a57f-01ec728132a3
+		summarizeBy: none
+		sourceColumn: search_keyword_groups
+
+		annotation SummarizationSetBy = Automatic
+
+	column keyword_count
+		dataType: string
+		lineageTag: ab0b3ddd-837d-42cc-a8e8-5da57f22d103
+		summarizeBy: none
+		sourceColumn: keyword_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column keyword_group
+		dataType: string
+		lineageTag: 81f3e107-8f83-45ce-b17f-4056c2407d4f
+		summarizeBy: none
+		sourceColumn: keyword_group
+
+		annotation SummarizationSetBy = Automatic
+
+	column count_post
+		dataType: int64
+		formatString: 0
+		lineageTag: 299bd002-bb4f-463e-9ac6-51eb3de6e44b
+		summarizeBy: sum
+		sourceColumn: count_post
+
+		annotation SummarizationSetBy = Automatic
+
+	partition post_search_kw_group = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\KANISORNUN\OneDrive - Allianz\Documents\Mine\IS\Dashboard\post_search_kw_group.csv"),[Delimiter=",", Columns=4, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"id", type text}, {"search_keyword_groups", type text}}),
+				    #"Added Custom" = Table.AddColumn(#"Changed Type", "count_post", each 1, Int16.Type)
+				in
+				    #"Added Custom"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

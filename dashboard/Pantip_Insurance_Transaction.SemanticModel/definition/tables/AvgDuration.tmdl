@@ -1,0 +1,49 @@
+table AvgDuration
+	lineageTag: b12608c2-6557-4949-abb5-cc0fd2525daf
+
+	column AvgDuration
+		lineageTag: 6e4ea389-b5c5-4399-bcf1-af17bac193e9
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'AvgDuration Order'
+
+		relatedColumnDetails
+			groupByColumn: 'AvgDuration Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'AvgDuration Fields'
+		isHidden
+		lineageTag: 332932f5-5a29-47a0-9d21-2c6f247760ef
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'AvgDuration Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'AvgDuration Order'
+		isHidden
+		formatString: 0
+		lineageTag: b0c1dea3-b1fb-4dd0-8dcd-f51218792263
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition AvgDuration = calculated
+		mode: import
+		source =
+				{
+				    ("Mean", NAMEOF('post_details'[Mean Company Response]), 0),
+				    ("Mean Trim", NAMEOF('post_details'[Mean Company Response (Trim Tail 2%)]), 1),
+				    ("Median", NAMEOF('post_details'[Med Company Response]), 2)
+				}
+
+	annotation PBI_Id = 96ab0bfd6c5740d7bbf18a59cb09bb3b
+

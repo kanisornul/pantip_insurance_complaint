@@ -1,0 +1,116 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "ee76a41628210d0a5b4d",
+  "position": {
+    "x": 0,
+    "y": 296.5124696597635,
+    "z": 4000,
+    "height": 406.97789953300872,
+    "width": 610.46684929951311,
+    "tabOrder": 3000
+  },
+  "visual": {
+    "visualType": "hundredPercentStackedColumnChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "post_details"
+                    }
+                  },
+                  "Property": "PostCreateYear"
+                }
+              },
+              "queryRef": "post_details.PostCreateYear",
+              "nativeQueryRef": "PostCreateYear",
+              "active": true
+            }
+          ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "post_details"
+                    }
+                  },
+                  "Property": "Group Response Duration"
+                }
+              },
+              "queryRef": "post_details.Group Response Duration",
+              "nativeQueryRef": "Group Response Duration"
+            }
+          ]
+        },
+        "Tooltips": {
+          "projections": [
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "post_details"
+                        }
+                      },
+                      "Property": "duration_min_post_to_first_company_res"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Avg(post_details.duration_min_post_to_first_company_res)",
+              "nativeQueryRef": "Average of duration_min_post_to_first_company_res"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "post_details"
+                    }
+                  },
+                  "Property": "CountID"
+                }
+              },
+              "queryRef": "post_details.CountID",
+              "nativeQueryRef": "CountID"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "post_details"
+                  }
+                },
+                "Property": "CountID"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

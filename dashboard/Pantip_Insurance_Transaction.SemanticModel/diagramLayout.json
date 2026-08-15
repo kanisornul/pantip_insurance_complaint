@@ -1,0 +1,152 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 0,
+            "y": 0
+          },
+          "nodeIndex": "post_details",
+          "nodeLineageTag": "acf1a919-0486-49ff-b59a-b18d02a5c3e6",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 9
+        },
+        {
+          "location": {
+            "x": 369.71428571428567,
+            "y": 0
+          },
+          "nodeIndex": "post_mentioned_company",
+          "nodeLineageTag": "9f5e6210-b33a-49db-8c27-12fc80ca7e4a",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 10
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 347.90476190476187
+          },
+          "nodeIndex": "post_rooms",
+          "nodeLineageTag": "a9559812-da49-43c8-8dc9-d7aaf26a6f29",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 573.42857142857133,
+            "y": 202.38095238095241
+          },
+          "nodeIndex": "post_sentence",
+          "nodeLineageTag": "27e46303-7c28-40d2-80a5-f1e3ba701478",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 640.76190476190482,
+            "y": 0
+          },
+          "nodeIndex": "post_tags",
+          "nodeLineageTag": "1d16e45f-6118-4e3a-94d4-629bacf765a4",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 282.38092694963734,
+            "y": 306.14285714285711
+          },
+          "nodeIndex": "post_tokens",
+          "nodeLineageTag": "e1115b7e-9a5d-41ed-8bfa-afe64dd1c02e",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 8
+        },
+        {
+          "location": {
+            "x": 946.19047619047626,
+            "y": 64.4285714285714
+          },
+          "nodeIndex": "post_search_kw_group",
+          "nodeLineageTag": "b4893b05-af21-40f8-988a-09d50c37653e",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 839.71428571428578,
+            "y": 511.95238095238096
+          },
+          "nodeIndex": "TopicMeasure",
+          "nodeLineageTag": "5a628ba4-3af6-4c34-98c2-b13d807b6905",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 567.76190476190459,
+            "y": 479.61904761904759
+          },
+          "nodeIndex": "df_sum_hybrid_fin",
+          "nodeLineageTag": "4bac39c5-5a62-4c89-a662-1a8aae0f88cc",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 858.95237913585834,
+            "y": 266
+          },
+          "nodeIndex": "SummarizedTable",
+          "nodeLineageTag": "459ada16-2595-4f1d-901d-00490a7d694b",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 4
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 84,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

@@ -1,0 +1,48 @@
+table TopicMeasure
+	lineageTag: 5a628ba4-3af6-4c34-98c2-b13d807b6905
+
+	column TopicMeasure
+		lineageTag: 028e60dd-1907-4c23-8a65-ff172cba1053
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'TopicMeasure Order'
+
+		relatedColumnDetails
+			groupByColumn: 'TopicMeasure Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'TopicMeasure Fields'
+		isHidden
+		lineageTag: 83ba31d4-38aa-4ba8-8425-8e1db675c336
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'TopicMeasure Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'TopicMeasure Order'
+		isHidden
+		formatString: 0
+		lineageTag: 8c972221-2a81-4579-8ea5-304566bab09a
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition TopicMeasure = calculated
+		mode: import
+		source =
+				{
+				    ("Number of Post", NAMEOF('post_search_kw_group'[CountID by Topics]), 0),
+				    ("Proportion", NAMEOF('post_search_kw_group'[% CountID by Topics]), 1)
+				}
+
+	annotation PBI_Id = 6e36bceafe584b12ab0a3d0c31548ae9
+

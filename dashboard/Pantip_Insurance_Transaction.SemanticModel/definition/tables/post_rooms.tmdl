@@ -1,0 +1,37 @@
+table post_rooms
+	lineageTag: a9559812-da49-43c8-8dc9-d7aaf26a6f29
+
+	measure 'CountID by Rooms' = DISTINCTCOUNT(post_rooms[id])
+		formatString: #,0
+		lineageTag: 5f388a42-307a-43c2-93ac-b0bcc4d452d3
+
+	column id
+		dataType: string
+		lineageTag: 274a5752-02c9-443e-a0e9-7503b6fa5c59
+		summarizeBy: none
+		sourceColumn: id
+
+		annotation SummarizationSetBy = Automatic
+
+	column room_label
+		dataType: string
+		lineageTag: 47dbf422-da1b-43f0-8652-2394f7d32dac
+		summarizeBy: none
+		sourceColumn: room_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition post_rooms = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\KANISORNUN\OneDrive - Allianz\Documents\Mine\IS\Dashboard\post_rooms.csv"),[Delimiter=",", Columns=2, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"id", type text}, {"room_label", type text}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,840 @@
+table post_details
+	lineageTag: acf1a919-0486-49ff-b59a-b18d02a5c3e6
+
+	measure CountID = DISTINCTCOUNT(post_details[id])
+		formatString: #,0
+		lineageTag: 5484c8d1-1df2-40ad-94e0-ee09eb7d8cef
+
+	measure 'Med Company Response' = ```
+			
+			VAR TotalMinutes = 
+			    MEDIAN(post_details[duration_min_post_to_first_company_res])
+			
+			-- Convert minutes into a fraction of a 24-hour day
+			RETURN TotalMinutes
+			```
+		lineageTag: 077e79bd-aa30-4fae-b2e9-f0b139bbea9f
+
+		formatStringDefinition = ```
+				VAR TotalMinutes = SELECTEDMEASURE()
+				VAR Days = INT(TotalMinutes / 1440)
+				VAR RemainingAfterDays = MOD(TotalMinutes, 1440)
+				VAR Hours = INT(RemainingAfterDays / 60)
+				VAR Minutes = ROUND(MOD(RemainingAfterDays, 60), 0)
+				
+				RETURN 
+				    IF(
+				        ISBLANK(TotalMinutes), 
+				        """--""", 
+				        """" & FORMAT(Days, "00") & "d " & FORMAT(Hours, "00") & ":" & FORMAT(Minutes, "00") & """"
+				    )
+				```
+
+	measure 'Outlier Response Duration' = ```
+			
+			VAR CurrentYear = SELECTEDVALUE(post_details[PostCreateYear])
+			VAR Q1 = 
+			    CALCULATE(
+			        PERCENTILEX.INC(ALLSELECTED(post_details)   
+			        , [duration_min_post_to_first_company_res], 0.25),
+			        VALUES(post_details[PostCreateYear])
+			    )
+			VAR Q3 = 
+			    CALCULATE(
+			        PERCENTILEX.INC(ALLSELECTED(post_details)  , [duration_min_post_to_first_company_res], 0.75),
+			        VALUES(post_details[PostCreateYear])
+			    )
+			VAR IQR = Q3 - Q1
+			VAR UpperFence = Q3 + (1.5 * IQR)
+			--VAR CurrentValue = [duration_min_post_to_first_company_res]
+			
+			RETURN
+			    -- Return 1 if it is a normal value, 0 if it is a High Outlier
+			    IF(MAX([duration_min_post_to_first_company_res]) > UpperFence, 1, 0)
+			```
+		formatString: 0
+		lineageTag: 1dcfa2d0-2933-40d2-a08a-d35a26e564ef
+
+	measure 'Mean Company Response' = AVERAGE(post_details[duration_min_post_to_first_company_res])
+		lineageTag: 0be68325-60ea-4bdb-91d5-af0dc096211b
+
+		formatStringDefinition = ```
+				VAR TotalMinutes = SELECTEDMEASURE()
+				VAR Days = INT(TotalMinutes / 1440)
+				VAR RemainingAfterDays = MOD(TotalMinutes, 1440)
+				VAR Hours = INT(RemainingAfterDays / 60)
+				VAR Minutes = ROUND(MOD(RemainingAfterDays, 60), 0)
+				
+				RETURN 
+				    IF(
+				        ISBLANK(TotalMinutes), 
+				        """--""", 
+				        """" & FORMAT(Days, "00") & "d " & FORMAT(Hours, "00") & ":" & FORMAT(Minutes, "00") & """"
+				    )
+				```
+
+	measure 'Duration Company Response (No OL)' = ```
+			
+			VAR Q1 = 
+			    CALCULATE(
+			        PERCENTILEX.INC(ALLSELECTED(post_details)   
+			        , [duration_min_post_to_first_company_res], 0.25)
+			    )
+			VAR Q3 = 
+			    CALCULATE(
+			        PERCENTILEX.INC(ALLSELECTED(post_details)  , [duration_min_post_to_first_company_res], 0.75)
+			    )
+			VAR IQR = Q3 - Q1
+			VAR UpperFence = Q3 + (1.5 * IQR)
+			VAR CurrentValue = SELECTEDVALUE(post_details[duration_min_post_to_first_company_res])
+			
+			RETURN
+			IF(
+			    CurrentValue <= UpperFence, 
+			    CurrentValue, 
+			    BLANK()
+			)
+			```
+		lineageTag: bca2f273-5bc4-483d-a638-6ea4fd2aa856
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure %ResponsePost =
+			DIVIDE(
+			    CALCULATE(COUNTROWS(post_details), post_details[first_comp_company_name] <> ""),
+			    COUNTROWS(post_details)
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 47407b03-054d-496f-955e-9b039c9558e8
+
+	measure 'Med Company Response (Exc. OL)' =
+			
+			VAR Med = [Med Company Response]
+			VAR MAD = MEDIANX(post_details,
+			          ABS(post_details[duration_min_post_to_first_company_res] - Med)
+			          )
+			VAR K = 3
+			VAR UpperBound = Med + K * Med
+			
+			RETURN
+			AVERAGEX(
+			    FILTER(
+			        post_details,
+			        post_details[duration_min_post_to_first_company_res] <= UpperBound)
+			        ,
+			        post_details[duration_min_post_to_first_company_res]
+			)
+		lineageTag: eaa563ca-e10c-4a91-9139-1a206362ccea
+
+		formatStringDefinition = ```
+				VAR TotalMinutes = SELECTEDMEASURE()
+				VAR Days = INT(TotalMinutes / 1440)
+				VAR RemainingAfterDays = MOD(TotalMinutes, 1440)
+				VAR Hours = INT(RemainingAfterDays / 60)
+				VAR Minutes = ROUND(MOD(RemainingAfterDays, 60), 0)
+				
+				RETURN 
+				    IF(
+				        ISBLANK(TotalMinutes), 
+				        """--""", 
+				        """" & FORMAT(Days, "00") & "d " & FORMAT(Hours, "00") & ":" & FORMAT(Minutes, "00") & """"
+				    )
+				```
+
+	measure 'Mean Company Response (Trim Tail 2%)' = ```
+			
+			VAR P98 = 
+			CALCULATE(
+			    PERCENTILEX.INC(
+			        post_details,
+			        post_details[duration_min_post_to_first_company_res],
+			        0.98),
+			        ALLEXCEPT(post_details, post_details[PostCreateYear])
+			)
+			
+			RETURN
+			AVERAGEX(
+			    FILTER(
+			        post_details,
+			        post_details[duration_min_post_to_first_company_res] <= P98)
+			        ,
+			        post_details[duration_min_post_to_first_company_res]
+			)
+			```
+		lineageTag: 92bbc678-e2da-4b1a-a15b-e17f9aa6ed6f
+
+		formatStringDefinition = ```
+				VAR TotalMinutes = SELECTEDMEASURE()
+				VAR Days = INT(TotalMinutes / 1440)
+				VAR RemainingAfterDays = MOD(TotalMinutes, 1440)
+				VAR Hours = INT(RemainingAfterDays / 60)
+				VAR Minutes = ROUND(MOD(RemainingAfterDays, 60), 0)
+				
+				RETURN 
+				    IF(
+				        ISBLANK(TotalMinutes), 
+				        """--""", 
+				        """" & FORMAT(Days, "00") & "d " & FORMAT(Hours, "00") & ":" & FORMAT(Minutes, "00") & """"
+				    )
+				```
+
+	measure 'Trimmed Count' = ```
+			
+			VAR P98 = 
+			CALCULATE(
+			    PERCENTILEX.INC(
+			        post_details,
+			        post_details[duration_min_post_to_first_company_res],
+			        0.98
+			    ),
+			    ALLEXCEPT(post_details, post_details[PostCreateYear])
+			)
+			
+			VAR TotalN = CALCULATE(
+			    COUNTROWS(post_details),
+			    ALLEXCEPT(post_details, post_details[PostCreateYear]))
+			
+			VAR KeptN = CALCULATE(
+			    COUNTROWS(post_details),
+			        FILTER(post_details, post_details[duration_min_post_to_first_company_res] <= P98),
+			        ALLEXCEPT(post_details, post_details[PostCreateYear]))
+			
+			RETURN 1-DIVIDE(KeptN, TotalN)
+			```
+		lineageTag: 63203939-7267-4d2d-9554-9e956534b1b8
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column id
+		dataType: string
+		lineageTag: b04f6d6a-2bd2-4f81-a2b5-5dfc291eb4e0
+		summarizeBy: none
+		sourceColumn: id
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_time
+		dataType: dateTime
+		formatString: yyyy-mm-dd hh:nn:ss
+		lineageTag: 493f4f20-3cff-45eb-b719-54a29a4551e3
+		summarizeBy: none
+		sourceColumn: created_time
+
+		variation Variation
+			isDefault
+			relationship: 0c7065b2-b654-46c8-ab3a-371b781a70c3
+			defaultHierarchy: LocalDateTable_c4b80d45-74bc-4f82-87d2-b2c19b30ab7a.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column url
+		dataType: string
+		lineageTag: b0046286-0cc8-4982-a381-b8c937c4f9cf
+		summarizeBy: none
+		sourceColumn: url
+
+		annotation SummarizationSetBy = Automatic
+
+	column author_name
+		dataType: string
+		lineageTag: 2f3407f3-df19-445e-aa2d-9b77e50e8361
+		summarizeBy: none
+		sourceColumn: author_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_comment
+		dataType: int64
+		formatString: 0
+		lineageTag: e7526af1-0d0d-4fef-b2f3-b5a6c3b9f806
+		summarizeBy: sum
+		sourceColumn: total_comment
+
+		annotation SummarizationSetBy = Automatic
+
+	column search_keyword
+		dataType: string
+		lineageTag: 614b54ce-0a5b-4bf0-92ac-b80cd83dcce5
+		summarizeBy: none
+		sourceColumn: search_keyword
+
+		annotation SummarizationSetBy = Automatic
+
+	column search_keyword_group
+		dataType: string
+		lineageTag: e9f5abd2-a4b1-4c9c-ad25-d7421e625451
+		summarizeBy: none
+		sourceColumn: search_keyword_group
+
+		annotation SummarizationSetBy = Automatic
+
+	column clean_title
+		dataType: string
+		lineageTag: bb2c2e9e-dcf7-420b-801e-5e535fb215b1
+		summarizeBy: none
+		sourceColumn: clean_title
+
+		annotation SummarizationSetBy = Automatic
+
+	column clean_details
+		dataType: string
+		lineageTag: caa60291-b14e-4e71-b76b-5e92588bd00b
+		summarizeBy: none
+		sourceColumn: clean_details
+
+		annotation SummarizationSetBy = Automatic
+
+	column gender
+		dataType: string
+		lineageTag: 0dc0eeda-1fcf-4267-887a-ea70e733e416
+		summarizeBy: none
+		sourceColumn: gender
+
+		annotation SummarizationSetBy = Automatic
+
+	column insurance_product
+		dataType: string
+		lineageTag: ccc51b4a-5791-4ae6-a0af-4253b60bb203
+		summarizeBy: none
+		sourceColumn: insurance_product
+
+		annotation SummarizationSetBy = Automatic
+
+	column clean_title_char_length
+		dataType: int64
+		formatString: 0
+		lineageTag: f32c74d8-265e-4e14-987d-f5cb2bbe10e4
+		summarizeBy: sum
+		sourceColumn: clean_title_char_length
+
+		annotation SummarizationSetBy = Automatic
+
+	column clean_details_char_length
+		dataType: int64
+		formatString: 0
+		lineageTag: 68c3cfe2-7df4-4723-8b8d-d916ed21c629
+		summarizeBy: sum
+		sourceColumn: clean_details_char_length
+
+		annotation SummarizationSetBy = Automatic
+
+	column clean_title_token_length
+		dataType: int64
+		formatString: 0
+		lineageTag: c6e9ecd2-ffdb-4e0c-868d-bcaa446b1545
+		summarizeBy: sum
+		sourceColumn: clean_title_token_length
+
+		annotation SummarizationSetBy = Automatic
+
+	column clean_details_token_length
+		dataType: int64
+		formatString: 0
+		lineageTag: 820ce2c0-272a-4881-8505-47ceee5aedf8
+		summarizeBy: sum
+		sourceColumn: clean_details_token_length
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comp_user_name
+		dataType: string
+		lineageTag: 63c411ef-4bce-4f60-9d70-2455f1379c0a
+		summarizeBy: none
+		sourceColumn: first_comp_user_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comp_no
+		dataType: int64
+		formatString: 0
+		lineageTag: 0a747d57-33af-40ef-86ee-84609307d6d5
+		summarizeBy: sum
+		sourceColumn: first_comp_no
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comp_details
+		dataType: string
+		lineageTag: ed7e9f69-fdc5-47be-85d1-72218a9515b5
+		summarizeBy: none
+		sourceColumn: first_comp_details
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comp_dt
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 825de59c-5488-4726-a1fc-8126b438d28e
+		summarizeBy: none
+		sourceColumn: first_comp_dt
+
+		variation Variation
+			isDefault
+			relationship: 9d90472e-ee47-45bc-87e1-cd5e2910ed50
+			defaultHierarchy: LocalDateTable_0b500de0-0365-4c39-b736-613ba682b5ef.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comp_reply_count
+		dataType: int64
+		formatString: 0
+		lineageTag: d977204e-9228-40fa-8ccc-96cd5b3adf93
+		summarizeBy: sum
+		sourceColumn: first_comp_reply_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comp_point
+		dataType: int64
+		formatString: 0
+		lineageTag: 1d174085-38af-4beb-bf63-9ded29cbcd24
+		summarizeBy: sum
+		sourceColumn: first_comp_point
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comp_emotion
+		dataType: int64
+		formatString: 0
+		lineageTag: 32acbd7e-62d6-4747-b373-dea04778180b
+		summarizeBy: sum
+		sourceColumn: first_comp_emotion
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comp_author_flag
+		dataType: string
+		lineageTag: 8bd3f504-7aec-494b-98ba-1d586b8bd6ff
+		summarizeBy: none
+		sourceColumn: first_comp_author_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comp_company_name
+		dataType: string
+		lineageTag: 4340da69-21df-4216-a7a9-e174ad96b499
+		summarizeBy: none
+		sourceColumn: first_comp_company_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comp_category
+		dataType: string
+		lineageTag: 6ae5f5ed-1253-4fc5-912d-d52a9c20bc45
+		summarizeBy: none
+		sourceColumn: first_comp_category
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comment_user_name
+		dataType: string
+		lineageTag: 8b642c1e-1447-4d4d-9c52-980192371c3a
+		summarizeBy: none
+		sourceColumn: first_comment_user_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comment_dt
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: a32933c1-0f4a-42cb-bc25-80b34b4018ab
+		summarizeBy: none
+		sourceColumn: first_comment_dt
+
+		variation Variation
+			isDefault
+			relationship: 95998865-4a4a-4a93-9753-2586db749f93
+			defaultHierarchy: LocalDateTable_6df19673-b475-45ae-ac67-1659e3d9b7fb.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comment_reply_count
+		dataType: int64
+		formatString: 0
+		lineageTag: 6be58a08-9e2f-49f8-bd21-d5c39125f630
+		summarizeBy: sum
+		sourceColumn: first_comment_reply_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comment_point
+		dataType: int64
+		formatString: 0
+		lineageTag: 22b5f7f2-390f-43a8-9fb4-c3f8877ab6c6
+		summarizeBy: sum
+		sourceColumn: first_comment_point
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comment_emotion
+		dataType: int64
+		formatString: 0
+		lineageTag: f6fca2fd-e659-4a05-9aa4-32be41daba25
+		summarizeBy: sum
+		sourceColumn: first_comment_emotion
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comment_author_flag
+		dataType: string
+		lineageTag: 92c92b66-f273-4183-97c1-480256707517
+		summarizeBy: none
+		sourceColumn: first_comment_author_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comment_is_company
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 75a26ba1-ae13-420e-901a-186f6781b31f
+		summarizeBy: none
+		sourceColumn: first_comment_is_company
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_comment_before_comp_no
+		dataType: int64
+		formatString: 0
+		lineageTag: 5c4e3b16-433c-4235-9053-1d99fecf64bd
+		summarizeBy: sum
+		sourceColumn: last_comment_before_comp_no
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_comment_before_comp_dt
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: adfe5dd0-e261-44fc-9506-472d14d9a90e
+		summarizeBy: none
+		sourceColumn: last_comment_before_comp_dt
+
+		variation Variation
+			isDefault
+			relationship: 8ec69604-749d-4ec5-a043-5fa154cf85e4
+			defaultHierarchy: LocalDateTable_0cbc9d65-d60a-4894-aa9c-7bba7a48fcfe.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_comment_before_comp_reply_count
+		dataType: int64
+		formatString: 0
+		lineageTag: 37646d84-6284-4296-8461-509db7a831a0
+		summarizeBy: sum
+		sourceColumn: last_comment_before_comp_reply_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_comment_before_comp_point
+		dataType: int64
+		formatString: 0
+		lineageTag: 77b70217-5d6b-4e88-8536-a76d35cf36d1
+		summarizeBy: sum
+		sourceColumn: last_comment_before_comp_point
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_comment_before_comp_emotion
+		dataType: int64
+		formatString: 0
+		lineageTag: 9476eae7-fabb-46d5-9da1-a63cded23ecf
+		summarizeBy: sum
+		sourceColumn: last_comment_before_comp_emotion
+
+		annotation SummarizationSetBy = Automatic
+
+	column n_comments_total
+		dataType: int64
+		formatString: 0
+		lineageTag: 36207228-95c5-4d15-b8f9-79f078e2df69
+		summarizeBy: sum
+		sourceColumn: n_comments_total
+
+		annotation SummarizationSetBy = Automatic
+
+	column n_unique_users_total
+		dataType: int64
+		formatString: 0
+		lineageTag: 068a4332-2d5b-4456-a8d0-e52c9b1433f9
+		summarizeBy: sum
+		sourceColumn: n_unique_users_total
+
+		annotation SummarizationSetBy = Automatic
+
+	column n_comments_non_comp_total
+		dataType: int64
+		formatString: 0
+		lineageTag: faaef81e-c5da-4263-a533-7a0143d8ad69
+		summarizeBy: sum
+		sourceColumn: n_comments_non_comp_total
+
+		annotation SummarizationSetBy = Automatic
+
+	column n_comments_comp_total
+		dataType: int64
+		formatString: 0
+		lineageTag: f89ce58f-1b29-4256-913d-dadaadad4dd8
+		summarizeBy: sum
+		sourceColumn: n_comments_comp_total
+
+		annotation SummarizationSetBy = Automatic
+
+	column n_comments_exc_author
+		dataType: int64
+		formatString: 0
+		lineageTag: 95b2f016-dc76-4411-acb3-96821eb3bfcb
+		summarizeBy: sum
+		sourceColumn: n_comments_exc_author
+
+		annotation SummarizationSetBy = Automatic
+
+	column n_unique_users_exc_author
+		dataType: int64
+		formatString: 0
+		lineageTag: e7a6a149-663b-4167-8d42-0e0d577e2ea3
+		summarizeBy: sum
+		sourceColumn: n_unique_users_exc_author
+
+		annotation SummarizationSetBy = Automatic
+
+	column duration_min_post_to_first_company_res
+		dataType: double
+		lineageTag: 071b3221-f5f9-41f8-a080-4a8c9cfe5795
+		summarizeBy: sum
+		sourceColumn: duration_min_post_to_first_company_res
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"post_details","TableItemName":"duration_min_post_to_first_company_res (bins)","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	column duration_min_post_to_first_comment
+		dataType: double
+		lineageTag: d97710a5-2cbe-4497-bad0-be92118d3e94
+		summarizeBy: sum
+		sourceColumn: duration_min_post_to_first_comment
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column duration_min_post_to_last_comment_b4_comp
+		dataType: double
+		lineageTag: 8e7d7981-5407-4d01-b6dd-bf53926d059e
+		summarizeBy: sum
+		sourceColumn: duration_min_post_to_last_comment_b4_comp
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column duration_min_last_com_to_comp_res
+		dataType: double
+		lineageTag: 47c67d19-0b7d-4528-bc5e-d1978b269dd6
+		summarizeBy: sum
+		sourceColumn: duration_min_last_com_to_comp_res
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column CompanyResponse = IF(post_details[first_comp_company_name]<>"","Responsed","No Response")
+		lineageTag: 49e8c86b-b294-4a33-99b0-657d933cf4ec
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column keyword_count
+		dataType: string
+		lineageTag: db50a224-f6ce-4add-854e-be7f693778b6
+		summarizeBy: none
+		sourceColumn: keyword_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column keyword_group
+		dataType: string
+		lineageTag: eada5bf5-e346-48ae-8c08-9cbb5db1938e
+		summarizeBy: none
+		sourceColumn: keyword_group
+
+		annotation SummarizationSetBy = Automatic
+
+	column PostCreateYear = YEAR(post_details[created_time])
+		formatString: 0
+		lineageTag: aaee25c5-9934-4e10-ac50-665b433614dd
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'duration_min_post_to_first_company_res (bins)' =
+			IF(
+				ISBLANK('post_details'[duration_min_post_to_first_company_res]),
+				BLANK(),
+				IF(
+					'post_details'[duration_min_post_to_first_company_res] >= 0,
+					ROUNDDOWN('post_details'[duration_min_post_to_first_company_res] / 600, 0) * 600,
+					ROUNDUP('post_details'[duration_min_post_to_first_company_res] / 600, 0) * 600
+				)
+			)
+		lineageTag: 7bdf75fb-5082-47e5-af83-7dc2e149244f
+		summarizeBy: none
+
+		extendedProperty GroupingMetadata =
+				{
+				  "version": 0,
+				  "groupedColumns": [
+				    {
+				      "Column": {
+				        "Expression": {
+				          "SourceRef": {
+				            "Entity": "post_details"
+				          }
+				        },
+				        "Property": "duration_min_post_to_first_company_res"
+				      }
+				    }
+				  ],
+				  "binningMetadata": {
+				    "binSize": {
+				      "value": 600.0,
+				      "unit": 0
+				    }
+				  }
+				}
+
+		annotation GroupingDesignState = {"Version":0,"Sources":[{"Name":"p","Entity":"post_details"}],"GroupedColumns":[{"Column":{"Expression":{"SourceRef":{"Source":"p"}},"Property":"duration_min_post_to_first_company_res"}}],"BinItem":{"Expression":{"Floor":{"Expression":{"Column":{"Expression":{"SourceRef":{"Source":"p"}},"Property":"duration_min_post_to_first_company_res"}},"Size":600.0}}}}
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Log Duration' = LOG(1+post_details[duration_min_post_to_first_company_res])
+		lineageTag: 5b90f61a-d6ab-4b19-9ccd-ef5f9f239c88
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"post_details","TableItemName":"Log Duration (bins)","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	column 'Log Duration (bins)' =
+			IF(
+				ISBLANK('post_details'[Log Duration]),
+				BLANK(),
+				IF(
+					'post_details'[Log Duration] >= 0,
+					ROUNDDOWN('post_details'[Log Duration] / 0.19109631923580106, 0) * 0.19109631923580106,
+					ROUNDUP('post_details'[Log Duration] / 0.19109631923580106, 0) * 0.19109631923580106
+				)
+			)
+		lineageTag: c2695c3f-3be4-44b0-83e4-359770a2c1d5
+		summarizeBy: none
+
+		extendedProperty GroupingMetadata =
+				{
+				  "version": 0,
+				  "groupedColumns": [
+				    {
+				      "Column": {
+				        "Expression": {
+				          "SourceRef": {
+				            "Entity": "post_details"
+				          }
+				        },
+				        "Property": "Log Duration"
+				      }
+				    }
+				  ],
+				  "binningMetadata": {
+				    "binSize": {
+				      "value": 0.19109631923580106,
+				      "unit": 0
+				    }
+				  }
+				}
+
+		annotation GroupingDesignState = {"Version":0,"Sources":[{"Name":"p","Entity":"post_details"}],"GroupedColumns":[{"Column":{"Expression":{"SourceRef":{"Source":"p"}},"Property":"Log Duration"}}],"BinItem":{"Expression":{"Floor":{"Expression":{"Column":{"Expression":{"SourceRef":{"Source":"p"}},"Property":"Log Duration"}},"Size":0.19109631923580106}}}}
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Group Response Duration' =
+			
+			VAR DurMin = [duration_min_post_to_first_company_res]
+			VAR ResponseFlag = post_details[CompanyResponse]
+			RETURN
+			SWITCH( TRUE(),
+			    ResponseFlag = "No Response", "No Response",
+			    DurMin <= 30, "1) Under 30 mins",
+			    DurMin <= 60, "2) > 30 mins-1 hour",
+			    DurMin <= 720, "3) 1-12 hours",
+			    DurMin <= 1440, "4) 12-24 hours",
+			    DurMin <= 4320, "5) 2-3 days",
+			    DurMin <= 10080, "6) 4-7 days",
+			    "7) Over 1 week"
+			)
+		lineageTag: 04877601-202d-4bad-9c5b-bb6e79890ff1
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Group Response Order' =
+			
+			VAR ResNo = post_details[first_comp_no]
+			RETURN
+			SWITCH( TRUE(),
+			    ResNo = 1, "1st Comment",
+			    ResNo = 2, "2nd Comment",
+			    ResNo <= 5, "3rd-5th Comment",
+			"Over 5th"
+			)
+		lineageTag: a033b310-d07d-4efe-9ce0-53ea21834be1
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Group Comment No Author' =
+			
+			VAR Comment = post_details[n_comments_exc_author]
+			RETURN
+			SWITCH( TRUE(),
+			    Comment = 0, "No Comment",
+			    Comment <= 2, "1) 1-2 Comments",
+			    Comment <= 5, "2) 3-5 Comments",
+			    Comment <= 10, "3) 6-10 Comments",
+			    Comment <= 15, "4) 11-15 Comments",
+			    Comment <= 20, "5) 16-20 Comments",
+			"6) Over 20"
+			)
+		lineageTag: aedda9ec-a8e8-4970-88fa-11d0734037f6
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition post_details = m
+		mode: import
+		source = ```
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\KANISORNUN\OneDrive - Allianz\Documents\Mine\IS\Dashboard\post_details.csv"),[Delimiter=",", Columns=47, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"id", type text}, {"created_time", type datetime}, {"url", type text}, {"author_name", type text}, {"total_comment", Int64.Type}, {"search_keyword", type text}, {"search_keyword_group", type text}, {"clean_title", type text}, {"clean_details", type text}, {"gender", type text}, {"insurance_product", type text}, {"clean_title_char_length", Int64.Type}, {"clean_details_char_length", Int64.Type}, {"clean_title_token_length", Int64.Type}, {"clean_details_token_length", Int64.Type}, {"first_comp_user_name", type text}, {"first_comp_no", Int64.Type}, {"first_comp_details", type text}, {"first_comp_dt", type datetime}, {"first_comp_reply_count", Int64.Type}, {"first_comp_point", Int64.Type}, {"first_comp_emotion", Int64.Type}, {"first_comp_author_flag", type text}, {"first_comp_company_name", type text}, {"first_comp_category", type text}, {"first_comment_user_name", type text}, {"first_comment_dt", type datetime}, {"first_comment_reply_count", Int64.Type}, {"first_comment_point", Int64.Type}, {"first_comment_emotion", Int64.Type}, {"first_comment_author_flag", type text}, {"first_comment_is_company", type logical}, {"last_comment_before_comp_no", Int64.Type}, {"last_comment_before_comp_dt", type datetime}, {"last_comment_before_comp_reply_count", Int64.Type}, {"last_comment_before_comp_point", Int64.Type}, {"last_comment_before_comp_emotion", Int64.Type}, {"n_comments_total", Int64.Type}, {"n_unique_users_total", Int64.Type}, {"n_comments_non_comp_total", Int64.Type}, {"n_comments_comp_total", Int64.Type}, {"n_comments_exc_author", Int64.Type}, {"n_unique_users_exc_author", Int64.Type}, {"duration_min_post_to_first_company_res", type number}, {"duration_min_post_to_first_comment", type number}, {"duration_min_post_to_last_comment_b4_comp", type number}, {"duration_min_last_com_to_comp_res", type number}}),
+				    
+				    KW = post_search_kw_group,
+				    #"Removed Columns" = Table.RemoveColumns(KW,{"search_keyword_groups"}),
+				    #"Removed Duplicates" = Table.Distinct(#"Removed Columns"),
+				
+				    #"Merged Queries" = Table.NestedJoin(#"Changed Type", {"id"}, #"Removed Duplicates", {"id"}, "post_search_kw_group", JoinKind.LeftOuter),
+				    #"Expanded" = Table.ExpandTableColumn(#"Merged Queries", "post_search_kw_group", {"keyword_count", "keyword_group"}, {"keyword_count", "keyword_group"})
+				in
+				    Expanded
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

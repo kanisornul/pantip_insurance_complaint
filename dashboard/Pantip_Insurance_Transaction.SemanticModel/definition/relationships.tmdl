@@ -1,0 +1,58 @@
+relationship 0c7065b2-b654-46c8-ab3a-371b781a70c3
+	joinOnDateBehavior: datePartOnly
+	fromColumn: post_details.created_time
+	toColumn: LocalDateTable_c4b80d45-74bc-4f82-87d2-b2c19b30ab7a.Date
+
+relationship 9d90472e-ee47-45bc-87e1-cd5e2910ed50
+	joinOnDateBehavior: datePartOnly
+	fromColumn: post_details.first_comp_dt
+	toColumn: LocalDateTable_0b500de0-0365-4c39-b736-613ba682b5ef.Date
+
+relationship 95998865-4a4a-4a93-9753-2586db749f93
+	joinOnDateBehavior: datePartOnly
+	fromColumn: post_details.first_comment_dt
+	toColumn: LocalDateTable_6df19673-b475-45ae-ac67-1659e3d9b7fb.Date
+
+relationship 8ec69604-749d-4ec5-a043-5fa154cf85e4
+	joinOnDateBehavior: datePartOnly
+	fromColumn: post_details.last_comment_before_comp_dt
+	toColumn: LocalDateTable_0cbc9d65-d60a-4894-aa9c-7bba7a48fcfe.Date
+
+relationship 667f6f2c-3ce8-660d-af14-e0cfe8ab4c0e
+	crossFilteringBehavior: bothDirections
+	fromColumn: post_mentioned_company.id
+	toColumn: post_details.id
+
+relationship 9eb5bc03-6a13-c9f8-a223-9367270ca1fa
+	fromColumn: post_rooms.id
+	toColumn: post_details.id
+
+relationship a629cf89-1706-de1c-92f0-eaf97bf95582
+	crossFilteringBehavior: bothDirections
+	fromColumn: post_tokens.id
+	toColumn: post_details.id
+
+relationship f478dc32-dc81-9c79-ac8c-33036927dc80
+	fromColumn: post_sentence.id
+	toColumn: post_details.id
+
+relationship b10e3f7b-f2e7-ca65-6878-7dbee8b8ee54
+	fromColumn: post_tags.id
+	toColumn: post_details.id
+
+relationship 4eac26bb-c600-126b-f547-e8f0ed896da1
+	crossFilteringBehavior: bothDirections
+	fromColumn: post_search_kw_group.id
+	toColumn: post_details.id
+
+relationship 2f879966-5475-4d78-c0c3-a6c17376ef02
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: post_details.id
+	toColumn: df_sum_hybrid_fin.doc_id
+
+relationship 8ef16358-07a3-53f9-a1c0-a08a6a8cc08a
+	crossFilteringBehavior: bothDirections
+	fromColumn: post_mentioned_company.mentioned_comp_name
+	toColumn: SummarizedTable.mentioned_comp_name
+

@@ -1,0 +1,33 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["post_details","post_mentioned_company","post_rooms","post_sentence","post_tags","post_tokens","post_search_kw_group","df_sum_hybrid_fin"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table post_details
+ref table DateTableTemplate_02d0f702-f1f9-4ba3-bbed-66d0dd216f24
+ref table LocalDateTable_c4b80d45-74bc-4f82-87d2-b2c19b30ab7a
+ref table LocalDateTable_0b500de0-0365-4c39-b736-613ba682b5ef
+ref table LocalDateTable_6df19673-b475-45ae-ac67-1659e3d9b7fb
+ref table LocalDateTable_0cbc9d65-d60a-4894-aa9c-7bba7a48fcfe
+ref table post_mentioned_company
+ref table post_rooms
+ref table post_sentence
+ref table post_tags
+ref table post_tokens
+ref table post_search_kw_group
+ref table TopicMeasure
+ref table df_sum_hybrid_fin
+ref table SummarizedTable
+ref table AvgDuration
+
+ref cultureInfo en-US
+

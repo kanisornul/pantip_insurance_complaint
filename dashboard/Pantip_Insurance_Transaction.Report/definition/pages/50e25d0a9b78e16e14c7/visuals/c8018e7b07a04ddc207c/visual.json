@@ -1,0 +1,139 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "c8018e7b07a04ddc207c",
+  "position": {
+    "x": 10.254099386656653,
+    "y": 0,
+    "z": 0,
+    "height": 108.40047923037032,
+    "width": 411.62884680721703,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "pivotTable",
+    "query": {
+      "queryState": {
+        "Rows": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "post_search_kw_group"
+                    }
+                  },
+                  "Property": "keyword_group"
+                }
+              },
+              "queryRef": "post_search_kw_group.keyword_group",
+              "nativeQueryRef": "keyword_group",
+              "active": true
+            }
+          ]
+        },
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "df_sum_hybrid_fin"
+                        }
+                      },
+                      "Property": "coverage"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Sum(df_sum_hybrid_fin.coverage)",
+              "nativeQueryRef": "Average of coverage"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "df_sum_hybrid_fin"
+                        }
+                      },
+                      "Property": "diversity"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Sum(df_sum_hybrid_fin.diversity)",
+              "nativeQueryRef": "Average of diversity"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "e93b537188657646e1a4",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "df_sum_hybrid_fin"
+              }
+            },
+            "Property": "set"
+          }
+        },
+        "type": "Categorical",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "d",
+              "Entity": "df_sum_hybrid_fin",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "In": {
+                  "Expressions": [
+                    {
+                      "Column": {
+                        "Expression": {
+                          "SourceRef": {
+                            "Source": "d"
+                          }
+                        },
+                        "Property": "set"
+                      }
+                    }
+                  ],
+                  "Values": [
+                    [
+                      {
+                        "Literal": {
+                          "Value": "'test'"
+                        }
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "howCreated": "User"
+      }
+    ]
+  }
+}

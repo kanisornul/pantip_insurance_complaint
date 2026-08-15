@@ -1,0 +1,60 @@
+table post_sentence
+	lineageTag: 27e46303-7c28-40d2-80a5-f1e3ba701478
+
+	column id
+		dataType: string
+		lineageTag: 7a234191-b6bc-4245-aedd-f08bdae8f9c0
+		summarizeBy: none
+		sourceColumn: id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sentence_refined
+		dataType: string
+		lineageTag: af1b3ef0-03d9-4018-94e8-c1fd2a5a6f06
+		summarizeBy: none
+		sourceColumn: sentence_refined
+
+		annotation SummarizationSetBy = Automatic
+
+	column n_tokens_attacut_rf
+		dataType: int64
+		formatString: 0
+		lineageTag: de056510-da44-4ceb-adf4-40a0a789a229
+		summarizeBy: sum
+		sourceColumn: n_tokens_attacut_rf
+
+		annotation SummarizationSetBy = Automatic
+
+	column len_sentence
+		dataType: int64
+		formatString: 0
+		lineageTag: 5f6ebc47-80f5-4315-b0fd-2a9ed2209c37
+		summarizeBy: sum
+		sourceColumn: len_sentence
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_boilerplate_flag
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 52a64732-f74a-4e29-9792-e29f44387319
+		summarizeBy: none
+		sourceColumn: is_boilerplate_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	partition post_sentence = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\KANISORNUN\OneDrive - Allianz\Documents\Mine\IS\Dashboard\post_sentence.csv"),[Delimiter=",", Columns=5, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"id", type text}, {"sentence_refined", type text}, {"n_tokens_attacut_rf", Int64.Type}, {"len_sentence", Int64.Type}, {"is_boilerplate_flag", type logical}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

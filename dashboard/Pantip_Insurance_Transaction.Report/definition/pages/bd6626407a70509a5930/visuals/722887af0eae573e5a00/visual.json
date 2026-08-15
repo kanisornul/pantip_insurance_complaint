@@ -1,0 +1,94 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "722887af0eae573e5a00",
+  "position": {
+    "x": 0,
+    "y": 0,
+    "z": 1000,
+    "height": 151,
+    "width": 320,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Calculated by P(Product | Company) / P(Product)",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "DIN"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "สัดส่วนของการร้องเรียนของผลิตภัณฑ์นั้นในบริษัท"
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "สูงหรือต่ำกว่าสัดส่วนของผลิตภัณฑ์เดียวกันในภาพรวม"
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Measure a product accounts for a higher or lower share of complaints for company compare to overall",
+                    "textStyle": {
+                      "fontFamily": "DIN"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "= 1: Same as market average",
+                    "textStyle": {
+                      "fontFamily": "DIN"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ">1: Potential pain point",
+                    "textStyle": {
+                      "fontFamily": "DIN"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "<1: Under-represented",
+                    "textStyle": {
+                      "fontFamily": "DIN"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

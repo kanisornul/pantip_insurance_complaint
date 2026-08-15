@@ -1,0 +1,37 @@
+table post_tags
+	lineageTag: 1d16e45f-6118-4e3a-94d4-629bacf765a4
+
+	measure 'CountID by Tags' = DISTINCTCOUNT(post_tags[id])
+		formatString: #,0
+		lineageTag: 0d47ebcf-b382-45fb-8920-0227df732bf2
+
+	column id
+		dataType: string
+		lineageTag: 8e752fa6-1273-4b3e-8b61-c5e238fd1243
+		summarizeBy: none
+		sourceColumn: id
+
+		annotation SummarizationSetBy = Automatic
+
+	column tags
+		dataType: string
+		lineageTag: f0febd43-b571-4222-aa73-0c768eac19e4
+		summarizeBy: none
+		sourceColumn: tags
+
+		annotation SummarizationSetBy = Automatic
+
+	partition post_tags = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\KANISORNUN\OneDrive - Allianz\Documents\Mine\IS\Dashboard\post_tags.csv"),[Delimiter=",", Columns=2, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"id", type text}, {"tags", type text}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

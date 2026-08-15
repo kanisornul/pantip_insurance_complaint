@@ -1,0 +1,56 @@
+table post_tokens
+	lineageTag: e1115b7e-9a5d-41ed-8bfa-afe64dd1c02e
+
+	measure 'CountID by Tokens' = DISTINCTCOUNT(post_tokens[id])
+		formatString: 0
+		lineageTag: 87825ea2-36fd-4c5a-b86d-ca9ab0e8129e
+
+	column id
+		dataType: string
+		lineageTag: 5f0c6d58-f96a-4185-97ee-8a2f5cdfc019
+		summarizeBy: none
+		sourceColumn: id
+
+		annotation SummarizationSetBy = Automatic
+
+	column tokens_with_stopwords
+		dataType: string
+		lineageTag: 4e791963-789e-4b25-81c9-0de342943133
+		summarizeBy: none
+		sourceColumn: tokens_with_stopwords
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_stopwords_flag
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a05e3018-ddb4-40a7-83f9-d38eace3d155
+		summarizeBy: none
+		sourceColumn: is_stopwords_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_stopwords_flag_2
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 4dccf72f-3b8a-4c86-9f30-0c62f6b4121d
+		summarizeBy: none
+		sourceColumn: is_stopwords_flag_2
+
+		annotation SummarizationSetBy = Automatic
+
+	partition post_tokens = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\KANISORNUN\OneDrive - Allianz\Documents\Mine\IS\Dashboard\post_tokens.csv"),[Delimiter=",", Columns=4, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"id", type text}, {"tokens_with_stopwords", type text}, {"is_stopwords_flag", type logical}, {"is_stopwords_flag_2", type logical}}),
+				    #"Removed Duplicates" = Table.Distinct(#"Changed Type")
+				in
+				    #"Removed Duplicates"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,261 @@
+table post_mentioned_company
+	lineageTag: 9f5e6210-b33a-49db-8c27-12fc80ca7e4a
+
+	measure 'CountID by Action' = DISTINCTCOUNT(post_mentioned_company[id])
+		formatString: 0
+		lineageTag: 1b1afa35-7a37-43b6-b54b-45e25f2f6671
+
+	measure '% CountID by Action' = ```
+			
+			VAR CurrentTopicCount = CALCULATE([CountID by Action])
+			VAR TotalForThatYear = 
+			    CALCULATE(
+			        [CountID by Action], 
+			        ALLEXCEPT(post_mentioned_company, post_details[PostCreateYear])
+			    )
+			
+			RETURN 
+			    DIVIDE(CurrentTopicCount, TotalForThatYear, 0)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: fc94e68b-f431-4481-8449-656ec4ccd086
+
+	measure 'CountID in Product' =
+			
+			VAR TotalAll =
+			   CALCULATE(
+			       [CountID],
+			       ALL(post_details)
+			   )
+			-- P(Product | Company): สัดส่วนของ product นี้ "ภายในบริษัท"
+			VAR CompanyTotal_AllProducts =
+			   CALCULATE(
+			       [CountID],
+			       REMOVEFILTERS(post_details[insurance_product])
+			   )
+			VAR P_Product_Given_Company =
+			   DIVIDE(
+			       [CountID],
+			       CompanyTotal_AllProducts
+			   )
+			-- P(Product): สัดส่วนของ product นี้ "ทั้งตลาด"
+			VAR MarketTotal_ThisProduct =
+			   CALCULATE(
+			       [CountID],
+			       REMOVEFILTERS(post_mentioned_company[mentioned_comp_name])
+			   )
+			VAR P_Product_Market =
+			   DIVIDE(
+			       MarketTotal_ThisProduct,
+			       TotalAll
+			   )
+			RETURN
+			DIVIDE(
+			   P_Product_Given_Company,
+			   P_Product_Market
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 831a9541-e790-404f-a779-0b5b6b3ef41f
+
+	measure 'CountID Company' = DISTINCTCOUNT(post_mentioned_company[id])
+		formatString: #,0
+		lineageTag: 879fe927-f78a-4105-af44-1f1e26d81294
+
+	measure 'Pain Ratio' =
+			
+			VAR TotalAll =
+			   CALCULATE(
+			       [CountID],
+			       REMOVEFILTERS(post_mentioned_company[mentioned_comp_name]),
+			       REMOVEFILTERS(post_details[insurance_product])
+			   )
+			-- P(Product | Company)
+			VAR CompanyTotal_AllProducts =
+			   CALCULATE(
+			       [CountID],
+			       REMOVEFILTERS(post_details[insurance_product])
+			   )
+			VAR P_Product_Given_Company =
+			   DIVIDE([CountID], CompanyTotal_AllProducts)
+			-- P(Product)
+			VAR MarketTotal_ThisProduct =
+			   CALCULATE(
+			       [CountID],
+			       REMOVEFILTERS(post_mentioned_company[mentioned_comp_name])
+			   )
+			VAR P_Product_Market =
+			   DIVIDE(MarketTotal_ThisProduct, TotalAll)
+			RETURN
+			DIVIDE(P_Product_Given_Company, P_Product_Market)
+		lineageTag: 79e5a9e9-7155-48f5-aab8-79ece6f84621
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '% Avg Response' = ```
+			
+			DIVIDE(
+			        SUM(post_mentioned_company[response_count]), 
+			        SUM(post_mentioned_company[mentioned_count])
+			)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 48f706ae-643e-4ed9-ba22-e4a028a484d5
+
+	measure Check =
+			
+			AVERAGEX(
+			    VALUES(post_mentioned_company[mentioned_comp_name]),
+			    [Pain Ratio]
+			)
+		lineageTag: 6a69f2ae-d6be-4743-8f2a-ddd6ffe47e6a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Pain Ratio Filter' =
+			
+			IF(
+			    [CountID Company] < 5,
+			    BLANK(),
+			    [Pain Ratio]
+			)
+		lineageTag: 899a370a-22f7-4afd-bc4d-5c068809593b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column id
+		dataType: string
+		lineageTag: ab4b4e6a-b919-42d1-9fb2-12618ea87c96
+		summarizeBy: none
+		sourceColumn: id
+
+		annotation SummarizationSetBy = Automatic
+
+	column mentioned_comp_name
+		dataType: string
+		lineageTag: 250b0207-5185-4a36-8594-2d9d53d35938
+		summarizeBy: none
+		sourceColumn: mentioned_comp_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column mentioned_flag
+		dataType: string
+		lineageTag: 21a8d8ed-f6e2-444e-aab2-87a5bf1ad432
+		summarizeBy: none
+		sourceColumn: mentioned_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column category
+		dataType: string
+		lineageTag: 92b7cf46-815a-48f4-8ae9-e8bac5917ddc
+		summarizeBy: none
+		sourceColumn: category
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_comp_company_name
+		dataType: string
+		lineageTag: 2ff2da63-1c8c-45c5-a6d0-661f7ad5c070
+		summarizeBy: none
+		sourceColumn: first_comp_company_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column mentioned_response_comp
+		dataType: int64
+		formatString: 0
+		lineageTag: 31c018f3-1865-40f4-87e2-d45b69337409
+		summarizeBy: sum
+		sourceColumn: mentioned_response_comp
+
+		annotation SummarizationSetBy = Automatic
+
+	column mentioned_response_flag
+		dataType: string
+		lineageTag: 4f044892-c9a7-429c-b9be-0777c2cd4f5b
+		summarizeBy: none
+		sourceColumn: mentioned_response_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column mentioned_count
+		dataType: int64
+		formatString: 0
+		lineageTag: 725bb5fa-9ede-43d0-a38c-3fde5bf2c02f
+		summarizeBy: sum
+		sourceColumn: mentioned_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column response_count
+		dataType: int64
+		formatString: 0
+		lineageTag: 14ac24dc-de91-4f86-b84c-9a8932bb0197
+		summarizeBy: sum
+		sourceColumn: response_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column response_flag
+		dataType: string
+		lineageTag: 923047d3-9743-4536-821e-74ba4798c3fe
+		summarizeBy: none
+		sourceColumn: response_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Pain Point' =
+			
+			IF(
+			    [CountID Company] < 20,
+			    BLANK(),
+			    [Pain Ratio]
+			)
+		lineageTag: d7ca7079-f501-4a83-b37e-36fc71fe510d
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	hierarchy 'category Hierarchy'
+		lineageTag: 19ab61d8-5fd6-4d7e-970a-8226ca0f9e62
+
+		level category
+			lineageTag: cee3846b-f4ea-4ecf-99b3-0757aff74109
+			column: category
+
+		level mentioned_comp_name
+			lineageTag: 451f6a16-38b8-49a4-8b57-487417a317b4
+			column: mentioned_comp_name
+
+	partition post_mentioned_company = m
+		mode: import
+		source = ```
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\KANISORNUN\OneDrive - Allianz\Documents\Mine\IS\Dashboard\post_mentioned_company.csv"),[Delimiter=",", Columns=3, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"id", type text}, {"mentioned_comp_name", type text}, {"category", type text}}),
+				    #"Removed Duplicates" = Table.Distinct(#"Changed Type"),
+				    #"Added Custom" = Table.AddColumn(#"Removed Duplicates", "mentioned_flag", each if [mentioned_comp_name] = "" or [mentioned_comp_name] = null then "Not Mention" else "Mentioned", type text),
+				    #"Capitalized Each Word" = Table.TransformColumns(#"Added Custom",{{"category", Text.Proper, type text}}),
+				    #"Replaced Value" = Table.ReplaceValue(#"Capitalized Each Word","_","-",Replacer.ReplaceText,{"category"}),
+				    #"Merged Queries" = Table.NestedJoin(#"Replaced Value", {"id"}, post_details, {"id"}, "post_details", JoinKind.LeftOuter),
+				    #"Expanded post_details" = Table.ExpandTableColumn(#"Merged Queries", "post_details", {"first_comp_company_name"}, {"first_comp_company_name"}),
+				    #"Added Custom1" = Table.AddColumn(#"Expanded post_details", "mentioned_response_comp", each if [mentioned_comp_name] = [first_comp_company_name] then 1 else 0, Int16.Type),
+				    #"Added Custom2" = Table.AddColumn(#"Added Custom1", "mentioned_response_flag", each if [mentioned_comp_name] <> "" and [mentioned_comp_name] <> null and [mentioned_comp_name] = [first_comp_company_name] then "Mentioned + Responsed" else 
+				if [mentioned_comp_name] <> "" and [mentioned_comp_name] <> null and [first_comp_company_name] = "" then "Mentioned + No Response" else 
+				if [mentioned_comp_name] <> "" and [mentioned_comp_name] <> null and [first_comp_company_name] <> [mentioned_comp_name] then "Mentioned + No Response" else 
+				"Not Mentioned", type text),
+				    #"Added Custom3" = Table.AddColumn(#"Added Custom2", "mentioned_count", each if [mentioned_comp_name] <> "" and [mentioned_comp_name] <> null then 1 else 0, Int16.Type),
+				    #"Added Custom4" = Table.AddColumn(#"Added Custom3", "response_count", each if [first_comp_company_name] <> "" and [first_comp_company_name] <> null then 1 else 0, Int16.Type),
+				    #"Added Custom5" = Table.AddColumn(#"Added Custom4", "response_flag", each if [response_count] = 0 then "No Response" else "Responsed", type text)
+				in
+				    #"Added Custom5"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

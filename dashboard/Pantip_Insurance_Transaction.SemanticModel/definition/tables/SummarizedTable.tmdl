@@ -1,0 +1,70 @@
+table SummarizedTable
+	lineageTag: 459ada16-2595-4f1d-901d-00490a7d694b
+
+	measure %ResponseMentioned = DIVIDE(SUM(SummarizedTable[response_count]), SUM(SummarizedTable[mentioned_count]))
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 2e8e601e-2146-4844-b148-3c068eac96f0
+
+	measure %Response = DIVIDE(SUM(SummarizedTable[response_count]), COUNT(post_mentioned_company[id]))
+		lineageTag: 0b8785d8-b4ac-4add-87cd-dd2d9dd8616b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column mentioned_comp_name
+		lineageTag: 76c5a4e2-474a-4090-ab55-74063ed7eb30
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [mentioned_comp_name]
+
+		annotation SummarizationSetBy = Automatic
+
+	column category
+		lineageTag: a600c71e-8b56-4391-acd5-c97f6a53fe89
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [category]
+
+		annotation SummarizationSetBy = Automatic
+
+	column mentioned_count
+		formatString: 0
+		lineageTag: 52d06f6d-9496-401b-8135-3dcebc7b6a31
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [mentioned_count]
+
+		annotation SummarizationSetBy = Automatic
+
+	column response_count
+		formatString: 0
+		lineageTag: 15f5d1ad-04e3-4242-961a-6121bb36a7f9
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [response_count]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition SummarizedTable = calculated
+		mode: import
+		source = ```
+				
+				VAR GroupedData = 
+				    SUMMARIZE(
+				        post_mentioned_company,
+				        post_mentioned_company[mentioned_comp_name],
+				        post_mentioned_company[category],
+				        "mentioned_count", SUM(post_mentioned_company[mentioned_count]),
+				        "response_count", SUM(post_mentioned_company[response_count])
+				    )
+				RETURN
+				    SELECTCOLUMNS(
+				        GroupedData,
+				        "mentioned_comp_name", COALESCE(post_mentioned_company[mentioned_comp_name], "Unknown"),
+				        "category", COALESCE(post_mentioned_company[category], "Unknown"),
+				        "mentioned_count", [mentioned_count],
+				        "response_count", [response_count]
+				    )
+				```
+
+	annotation PBI_Id = b8185e1527044280bb5d84f0fee6e957
+

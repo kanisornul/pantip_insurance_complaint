@@ -1,5 +1,6 @@
 # Pantip Insurance Complaint Analysis
 NLP-based analysis and summarization of Thai insurance complaints from Pantip
+This repository is intended primarily for educational and portfolio purposes.
 
 ## Project Overview
 - This project analyzes insurance-related complaints and customer experiences shared on Pantip, one of Thailand's largest online discussion platforms.
